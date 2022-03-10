@@ -9,21 +9,14 @@ use std::{
 };
 
 use glob;
-
 use fs_extra::dir::{self, CopyOptions};
-
 use tempfile;
-
 use git2;
-
 use toml;
-
 use tar;
-
 use flate2::{write::GzEncoder, Compression};
 
-const FRONTIER_GIT_URL: &str = "https://github.com/paritytech/frontier.git";
-
+const FRONTIER_GIT_URL: &str = "https://github.com/edgeware/frontier.git";
 type CargoToml = HashMap<String, toml::Value>;
 
 #[derive(StructOpt)]

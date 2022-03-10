@@ -175,6 +175,18 @@ pub trait EthApi {
 	/// Used for submitting mining hashrate.
 	#[rpc(name = "eth_submitHashrate")]
 	fn submit_hashrate(&self, _: U256, _: H256) -> Result<bool>;
+
+	/// Introduced in EIP-1159 for getting information on the appropiate priority fee to use.
+	#[rpc(name = "eth_feeHistory")]
+	fn fee_history(
+		&self,
+		block_count: U256,
+		newest_block: BlockNumber,
+		reward_percentiles: Option<Vec<f64>>,
+	) -> Result<FeeHistory>;
+
+
+
 }
 
 /// Eth filters rpc api (polling).
