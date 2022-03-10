@@ -20,7 +20,7 @@ use ethereum_types::{H160, H256, U256};
 use fp_rpc::{EthereumRuntimeRPCApi, TransactionStatus};
 use sp_api::{ApiExt, BlockId, ProvideRuntimeApi};
 use sp_io::hashing::{blake2_128, twox_128};
-use sp_runtime::traits::Block as BlockT;
+use sp_runtime::{traits::Block as BlockT, Permill};
 use std::{marker::PhantomData, sync::Arc};
 
 mod schema_v1_override;
@@ -51,7 +51,7 @@ pub trait StorageOverride<Block: BlockT> {
 	/// Return the current block.
 	fn current_block(&self, block: &BlockId<Block>) -> Option<EthereumBlock>;
 	/// Return the current receipt.
-	fn current_receipts(&self, block: &BlockId<Block>) -> Option<Vec<ethereum::Receipt>>;
+	fn current_receipts(&self, block: &BlockId<Block>) -> Option<Vec<ethereum::ReceiptV3>>;
 	/// Return the current transaction status.
 	fn current_transaction_statuses(
 		&self,
@@ -145,7 +145,7 @@ where
 	}
 
 	/// Return the current receipt.
-	fn current_receipts(&self, block: &BlockId<Block>) -> Option<Vec<ethereum::Receipt>> {
+	fn current_receipts(&self, block: &BlockId<Block>) -> Option<Vec<ethereum::ReceiptV3>> {
 		let api = self.client.runtime_api();
 
 		let api_version = if let Ok(Some(api_version)) =

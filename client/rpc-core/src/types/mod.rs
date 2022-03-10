@@ -31,6 +31,7 @@ mod sync;
 mod transaction;
 mod transaction_request;
 mod work;
+mod fee;
 
 pub mod pubsub;
 
@@ -40,6 +41,7 @@ pub use self::{
 	block_number::BlockNumber,
 	bytes::Bytes,
 	call_request::CallRequest,
+	fee::{FeeHistory, FeeHistoryCache, FeeHistoryCacheItem},
 	filter::{
 		Filter, FilterAddress, FilterChanges, FilterPool, FilterPoolItem, FilterType,
 		FilteredParams, Topic, VariadicValue,

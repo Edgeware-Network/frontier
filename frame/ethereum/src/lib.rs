@@ -48,7 +48,7 @@ use sp_runtime::{
 use sp_std::{marker::PhantomData, prelude::*};
 
 pub use ethereum::{
-	BlockV2 as Block, LegacyTransactionMessage, Log, Receipt, TransactionAction,
+	BlockV2 as Block, LegacyTransactionMessage, Log,  ReceiptV3 as Receipt, TransactionAction,
 	TransactionV2 as Transaction,
 };
 pub use fp_rpc::TransactionStatus;
@@ -283,7 +283,7 @@ pub mod pallet {
 	/// Current building block's transactions and receipts.
 	#[pallet::storage]
 	pub(super) type Pending<T: Config> =
-		StorageValue<_, Vec<(Transaction, TransactionStatus, ethereum::Receipt)>, ValueQuery>;
+		StorageValue<_, Vec<(Transaction, TransactionStatus, Receipt)>, ValueQuery>;
 
 	/// The current Ethereum block.
 	#[pallet::storage]
@@ -291,7 +291,7 @@ pub mod pallet {
 
 	/// The current Ethereum receipts.
 	#[pallet::storage]
-	pub(super) type CurrentReceipts<T: Config> = StorageValue<_, Vec<ethereum::Receipt>>;
+	pub(super) type CurrentReceipts<T: Config> = StorageValue<_, Vec<Receipt>>;
 
 	/// The current transaction statuses.
 	#[pallet::storage]
@@ -449,7 +449,7 @@ impl<T: Config> Pallet<T> {
 		BlockHash::<T>::insert(block_number, block.header.hash());
 
 		if post_log {
-			let digest = DigestItem::<T::Hash>::Consensus(
+			let digest = DigestItem::Consensus(
 				FRONTIER_ENGINE_ID,
 				PostLog::Hashes(fp_consensus::Hashes::from_block(block)).encode(),
 			);
@@ -720,7 +720,7 @@ impl<T: Config> Pallet<T> {
 	}
 
 	/// Get receipts by number.
-	pub fn current_receipts() -> Option<Vec<ethereum::Receipt>> {
+	pub fn current_receipts() -> Option<Vec<Receipt>> {
 		CurrentReceipts::<T>::get()
 	}
 
@@ -904,7 +904,7 @@ impl<T: Config> BlockHashMapping for EthereumBlockHashMapping<T> {
 
 #[repr(u8)]
 #[derive(num_enum::FromPrimitive, num_enum::IntoPrimitive)]
-enum TransactionValidationError {
+pub enum TransactionValidationError {
 	#[allow(dead_code)]
 	#[num_enum(default)]
 	UnknownError, 

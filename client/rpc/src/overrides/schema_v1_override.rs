@@ -20,7 +20,10 @@ use fp_rpc::TransactionStatus;
 use sc_client_api::backend::{AuxStore, Backend, StateBackend, StorageProvider};
 use sp_api::BlockId;
 use sp_blockchain::{Error as BlockChainError, HeaderBackend, HeaderMetadata};
-use sp_runtime::traits::{BlakeTwo256, Block as BlockT};
+use sp_runtime::{
+	traits::{BlakeTwo256, Block as BlockT},
+Permill,
+};
 use sp_storage::StorageKey;
 use std::{marker::PhantomData, sync::Arc};
 
@@ -108,12 +111,26 @@ where
 	}
 
 	/// Return the current receipt.
-	fn current_receipts(&self, block: &BlockId<Block>) -> Option<Vec<ethereum::Receipt>> {
-		self.query_storage::<Vec<ethereum::Receipt>>(
+	fn current_receipts(&self, block: &BlockId<Block>) -> Option<Vec<ethereum::ReceiptV3>> {
+		self.query_storage::<Vec<ethereum::ReceiptV0>>(
 			block,
 			&StorageKey(storage_prefix_build(b"Ethereum", b"CurrentReceipts")),
 		)
+		.map(|receipts| {
+			receipts
+				.into_iter()
+				.map(|r| {
+					ethereum::ReceiptV3::Legacy(ethereum::EIP658ReceiptData {
+						status_code: r.state_root.to_low_u64_be() as u8,
+						used_gas: r.used_gas,
+						logs_bloom: r.logs_bloom,
+						logs: r.logs,
+					})
+				})
+				.collect()
+		})
 	}
+
 
 	/// Return the current transaction status.
 	fn current_transaction_statuses(
@@ -133,6 +150,12 @@ where
 	fn base_fee(&self, _block: &BlockId<Block>) -> Option<U256> {
 		None
 	}
+
+	fn elasticity(&self, _block: &BlockId<Block>) -> Option<Permill> {
+		None
+	}
+
+
 
 	fn is_eip1559(&self, _block: &BlockId<Block>) -> bool {
 		false

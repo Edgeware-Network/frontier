@@ -23,7 +23,7 @@ use jsonrpc_core::{BoxFuture, Result};
 use jsonrpc_derive::rpc;
 
 use crate::types::{
-	BlockNumber, Bytes, CallRequest, Filter, FilterChanges, Index, Log, Receipt, RichBlock,
+	BlockNumber, Bytes, CallRequest, Filter, FeeHistory, FilterChanges, Index, Log, Receipt, RichBlock,
 	SyncStatus, Transaction, TransactionRequest, Work,
 };
 pub use rpc_impl_EthApi::gen_server::EthApi as EthApiServer;
