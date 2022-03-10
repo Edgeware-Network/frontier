@@ -31,7 +31,7 @@ pub use ethereum::TransactionV2 as EthereumTransaction;
 pub use overrides::{
 	OverrideHandle, RuntimeApiStorageOverride, SchemaV1Override, SchemaV2Override, StorageOverride,
 };
-use libsecp256k1 as secp256k1;
+//use libsecp256k1 as secp256k1;
 use ethereum_types::{H160, H256};
 use evm::ExitError;
 pub use fc_rpc_core::types::TransactionMessage;

@@ -910,7 +910,7 @@ pub enum TransactionValidationError {
 	UnknownError, 
 	InvalidChainId,
 	InvalidSignature,
-	InvalidGasLimit, // Generic Gas limit error
+//	InvalidGasLimit, //  Gas limit error
 	GasLimitTooLow, // Gas limit is to low
 	GasLimitTooHigh, // Gas limit is to high
 	InsufficientFundsForTransfer, // Insufficient funds for transfer
