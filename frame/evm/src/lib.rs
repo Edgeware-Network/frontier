@@ -99,6 +99,7 @@ pub mod pallet {
 	use frame_system::pallet_prelude::*;
 
 	#[pallet::pallet]
+	#[pallet::without_storage_info] // todo | not production ready
 	#[pallet::generate_store(pub(super) trait Store)]
 	pub struct Pallet<T>(_);
 
@@ -145,7 +146,7 @@ pub mod pallet {
 
 		/// EVM config used in the module.
 		fn config() -> &'static EvmConfig {
-			&ISTANBUL_CONFIG
+			&LONDON_CONFIG // use ethereum london config
 		}
 	}
 
@@ -570,8 +571,10 @@ impl GasWeightMapping for () {
 		weight as u64
 	}
 }
+static LONDON_CONFIG: EvmConfig = EvmConfig::london();
 
-static ISTANBUL_CONFIG: EvmConfig = EvmConfig::istanbul();
+ //use london
+//static ISTANBUL_CONFIG: EvmConfig = EvmConfig::istanbul(); //change to london
 
 #[cfg(feature = "std")]
 #[derive(Clone, Eq, PartialEq, Encode, Decode, Debug, Serialize, Deserialize)]

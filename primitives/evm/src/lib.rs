@@ -28,7 +28,7 @@ use sp_std::vec::Vec;
 
 pub use evm::backend::{Basic as Account, Log};
 pub use precompile::{
-	Context, ExitError, ExitSucceed, LinearCostPrecompile, Precompile, PrecompileFailure,
+	Context, ExitError, ExitRevert, ExitSucceed, LinearCostPrecompile, Precompile, PrecompileFailure,
 	PrecompileOutput, PrecompileResult, PrecompileSet,
 };
 

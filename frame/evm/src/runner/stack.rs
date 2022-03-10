@@ -589,7 +589,7 @@ impl<'vicinity, 'config, T: Config> StackStateT<'config>
 		.map_err(|_| ExitError::OutOfFund)
 	}
 
-	fn reset_balance(&mut self, _address: H160) {
+	fn reset_balance(&mut self, _address: H160) {// function left empty by Parity
 		// Do nothing on reset balance in Substrate.
 		//
 		// This function exists in EVM because a design issue
@@ -597,7 +597,7 @@ impl<'vicinity, 'config, T: Config> StackStateT<'config>
 		// issurance to be reduced. We do not need to replicate this.
 	}
 
-	fn touch(&mut self, _address: H160) {
+	fn touch(&mut self, _address: H160) { // function left empty by Parity
 		// Do nothing on touch in Substrate.
 		//
 		// EVM pallet considers all accounts to exist, and distinguish
