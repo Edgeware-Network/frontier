@@ -179,6 +179,7 @@ pub mod pallet {
 	}
 
 	#[pallet::pallet]
+	#[pallet::without_storage_info] // gramatically wrong, but compiles with it..
 	#[pallet::generate_store(pub(super) trait Store)]
 	pub struct Pallet<T>(PhantomData<T>);
 
@@ -227,6 +228,15 @@ pub mod pallet {
 				}
 			}
 
+			0
+		}
+		//  Return the Weight of the Runtime upgrade
+		fn on_runtime_upgrade() -> Weight {
+			frame_support::storage::unhashed::put::<EthereumStorageSchema>(
+				&PALLET_ETHEREUM_SCHEMA,
+				&EthereumStorageSchema::V3,
+			);
+			
 			0
 		}
 	}
@@ -397,11 +407,18 @@ impl<T: Config> Pallet<T> {
 		let mut statuses = Vec::new();
 		let mut receipts = Vec::new();
 		let mut logs_bloom = Bloom::default();
+		let mut cumulative_gas_used = U256::zero();
 		for (transaction, status, receipt) in Pending::<T>::get() {
 			transactions.push(transaction);
 			statuses.push(status);
 			receipts.push(receipt.clone());
-			Self::logs_bloom(receipt.logs.clone(), &mut logs_bloom);
+			let (logs, used_gas) = match receipt {
+				Receipt::Legacy(d) | Receipt::EIP2930(d) | Receipt::EIP1559(d) => {
+					(d.logs.clone(), d.used_gas)
+				}
+			};
+			cumulative_gas_used = used_gas;
+			Self::logs_bloom(logs, &mut logs_bloom);
 		}
 
 		let ommers = Vec::<ethereum::Header>::new();
@@ -416,10 +433,7 @@ impl<T: Config> Pallet<T> {
 			difficulty: U256::zero(),
 			number: block_number,
 			gas_limit: T::BlockGasLimit::get(),
-			gas_used: receipts
-				.clone()
-				.into_iter()
-				.fold(U256::zero(), |acc, r| acc + r.used_gas),
+			gas_used: cumulative_gas_used,// simple
 			timestamp: UniqueSaturatedInto::<u64>::unique_saturated_into(
 				pallet_timestamp::Pallet::<T>::get(),
 			),
@@ -479,7 +493,7 @@ impl<T: Config> Pallet<T> {
 		};
 		if gasometer.record_transaction(transaction_cost).is_err() {
 			return Err(InvalidTransaction::Custom(
-				TransactionValidationError::InvalidGasLimit as u8,
+				TransactionValidationError::GasLimitTooLow as u8,
 			)
 			.into());
 		}
@@ -495,7 +509,7 @@ impl<T: Config> Pallet<T> {
 
 		if gas_limit >= T::BlockGasLimit::get() {
 			return Err(InvalidTransaction::Custom(
-				TransactionValidationError::InvalidGasLimit as u8,
+				TransactionValidationError::GasLimitTooHigh as u8,
 			)
 			.into());
 		}
@@ -530,8 +544,14 @@ impl<T: Config> Pallet<T> {
 		}
 
 		let account_data = pallet_evm::Pallet::<T>::account_basic(&origin);
+		if account_data.balance < transaction_data.value { //Check if the account has enough balance
+			return Err(InvalidTransaction::Custom(
+				TransactionValidationError::InsufficientFundsForTransfer as u8,
+			)
+			.into());
+		}
 		let total_payment = transaction_data.value.saturating_add(fee);
-		if account_data.balance < total_payment {
+		if account_data.balance < total_payment { 
 			return Err(InvalidTransaction::Payment.into());
 		}
 
@@ -572,9 +592,9 @@ impl<T: Config> Pallet<T> {
 	}
 
 	fn apply_validated_transaction(source: H160, transaction: Transaction) -> PostDispatchInfo {
-		let transaction_hash =
-			H256::from_slice(Keccak256::digest(&rlp::encode(&transaction)).as_slice());
-		let transaction_index = Pending::<T>::get().len() as u32;
+		let pending = Pending::<T>::get();
+		let transaction_hash = transaction.hash();
+		let transaction_index = pending.len() as u32;
 
 		let (to, _, info) = Self::execute(source, &transaction, None)
 			.expect("transaction is already validated; error indicates that the block is invalid");
@@ -617,8 +637,45 @@ impl<T: Config> Pallet<T> {
 				Some(info.value),
 			),
 		};
-
-		let receipt = ethereum::Receipt {
+		let receipt = {
+			let status_code: u8 = match reason {
+				ExitReason::Succeed(_) => 1,
+				_ => 0,
+			};
+			let logs_bloom = status.clone().logs_bloom;
+			let logs = status.clone().logs;
+			let cumulative_gas_used = if let Some((_, _, receipt)) = pending.last() {
+				match receipt {
+					Receipt::Legacy(d) | Receipt::EIP2930(d) | Receipt::EIP1559(d) => {
+						d.used_gas.saturating_add(used_gas)
+					}
+				}
+			} else {
+				used_gas
+			};
+			match &transaction {
+				Transaction::Legacy(_) => Receipt::Legacy(ethereum::EIP658ReceiptData {
+					status_code,
+					used_gas: cumulative_gas_used,
+					logs_bloom,
+					logs,
+				}),
+				Transaction::EIP2930(_) => Receipt::EIP2930(ethereum::EIP2930ReceiptData {
+					status_code,
+					used_gas: cumulative_gas_used,
+					logs_bloom,
+					logs,
+				}),
+				Transaction::EIP1559(_) => Receipt::EIP1559(ethereum::EIP2930ReceiptData {
+					status_code,
+					used_gas: cumulative_gas_used,
+					logs_bloom,
+					logs,
+				}),
+			}
+		};
+		/*
+		let receipt = ethereum::Receipt { // should work with just {}
 			state_root: match reason {
 				ExitReason::Succeed(_) => H256::from_low_u64_be(1),
 				ExitReason::Error(_) => H256::from_low_u64_le(0),
@@ -629,7 +686,7 @@ impl<T: Config> Pallet<T> {
 			logs_bloom: status.clone().logs_bloom,
 			logs: status.clone().logs,
 		};
-
+*/
 		Pending::<T>::append((transaction, status, receipt));
 
 		Self::deposit_event(Event::Executed(
@@ -820,6 +877,7 @@ pub enum EthereumStorageSchema {
 	Undefined,
 	V1,
 	V2,
+	V3,
 }
 
 impl Default for EthereumStorageSchema {
@@ -845,10 +903,15 @@ impl<T: Config> BlockHashMapping for EthereumBlockHashMapping<T> {
 }
 
 #[repr(u8)]
+#[derive(num_enum::FromPrimitive, num_enum::IntoPrimitive)]
 enum TransactionValidationError {
 	#[allow(dead_code)]
-	UnknownError,
+	#[num_enum(default)]
+	UnknownError, 
 	InvalidChainId,
 	InvalidSignature,
-	InvalidGasLimit,
+	InvalidGasLimit, // Generic Gas limit error
+	GasLimitTooLow, // Gas limit is to low
+	GasLimitTooHigh, // Gas limit is to high
+	InsufficientFundsForTransfer, // Insufficient funds for transfer
 }
