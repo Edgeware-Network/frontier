@@ -35,7 +35,9 @@ pub struct SchemaV3Override<B: BlockT, C, BE> {
 	_marker: PhantomData<(B, BE)>,
 }
 
+
 impl<B: BlockT, C, BE> SchemaV3Override<B, C, BE> {
+	#[allow(dead_code)]
 	pub fn new(client: Arc<C>) -> Self {
 		Self {
 			client,
