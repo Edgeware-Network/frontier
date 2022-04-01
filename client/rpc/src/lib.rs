@@ -20,7 +20,7 @@ mod eth;
 mod eth_pubsub;
 mod overrides;
 
-mod format;
+pub mod format; // make this public so we can use
 
 pub use eth::{
 	EthApi, EthApiServer, EthBlockDataCache, EthFilterApi, EthFilterApiServer, EthTask, NetApi,
