@@ -98,7 +98,7 @@ impl Into<Option<TransactionMessage>> for TransactionRequest {
 					.access_list
 					.unwrap()
 					.into_iter()
-					.map(|(address, slots)| AccessListItem { address, slots })
+					.map(|(address, storage_keys)| AccessListItem { address, storage_keys })
 					.collect(),
 			})),
 			// EIP1559
@@ -109,7 +109,7 @@ impl Into<Option<TransactionMessage>> for TransactionRequest {
 					max_fee_per_gas: self.max_fee_per_gas.unwrap_or_default(),
 					max_priority_fee_per_gas: self
 						.max_priority_fee_per_gas
-						.unwrap_or(U256::from(0)),
+						.unwrap_or(U256::from(0u128)),
 					gas_limit: self.gas.unwrap_or_default(),
 					value: self.value.unwrap_or(U256::zero()),
 					input: self.data.map(|s| s.into_vec()).unwrap_or_default(),
@@ -122,7 +122,7 @@ impl Into<Option<TransactionMessage>> for TransactionRequest {
 						.access_list
 						.unwrap_or(Vec::new())
 						.into_iter()
-						.map(|(address, slots)| AccessListItem { address, slots })
+						.map(|(address, storage_keys)| AccessListItem { address, storage_keys })
 						.collect(),
 				}))
 			}

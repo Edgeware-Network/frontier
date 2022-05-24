@@ -13,11 +13,11 @@ documentation = "https://docs.rs/sp-evm"
 targets = ["x86_64-unknown-linux-gnu"]
 
 [dependencies]
-sp-core = {  git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.16", default-features = false }
-sp-std = {  git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.16", default-features = false }
-serde = { version = "1.0.101", optional = true, features = ["derive"] }
-codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false }
-evm = { version = "0.33.1", default-features = false, features = ["with-codec"] }
+sp-core = {  git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.18", default-features = false }
+sp-std = {  git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.18", default-features = false }
+serde = { version = "1.0.137", optional = true, features = ["derive"] }
+codec = { package = "parity-scale-codec", version = "3.1.2", default-features = false, features=["derive"] }
+evm = { version = "0.35.0", default-features = false, features = ["with-codec"] }
 
 [features]
 default = ["std"]

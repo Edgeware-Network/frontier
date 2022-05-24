@@ -52,7 +52,7 @@ pub fn test_precompile_test_vectors<P: Precompile>(
 		let context: Context = Context {
 			address: Default::default(),
 			caller: Default::default(),
-			apparent_value: From::from(0),
+			apparent_value: From::from(0u128),
 		};
 
 		match P::execute(&input, Some(cost), &context, false) {

@@ -45,8 +45,10 @@ parameter_types! {
 	pub const BlockHashCount: u64 = 250;
 	pub BlockWeights: frame_system::limits::BlockWeights =
 		frame_system::limits::BlockWeights::simple_max(1024);
+//	pub max_consumers: u32 = 64u32;
 }
 impl frame_system::Config for Test {
+	type MaxConsumers = dyn frame_system::ConsumerLimits;
 	type BaseCallFilter = frame_support::traits::Everything;
 	type BlockWeights = ();
 	type BlockLength = ();
