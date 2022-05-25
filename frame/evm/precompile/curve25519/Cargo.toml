@@ -13,7 +13,7 @@ sp-core = {  default-features = false, git = "https://github.com/paritytech/subs
 sp-io = {  default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.18" }
 frame-support = {  default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.18" }
 fp-evm = { version = "3.0.0-dev", default-features = false, path = "../../../../primitives/evm" }
-codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false }
+codec = { package = "parity-scale-codec", version = "3.1.2", default-features = false }
 
 [dependencies.curve25519-dalek]
 version = "4.0.0-dev"

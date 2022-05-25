@@ -15,5 +15,5 @@ pallet-ethereum = {  path = "../../frame/ethereum" }
 fp-storage = { version = "2.0.0-dev", path = "../../primitives/storage"}
 kvdb = "0.11.0"
 kvdb-rocksdb = "0.15.2"
-codec = { package = "parity-scale-codec", version = "3.0.0", features = ["derive"] }
+codec = { package = "parity-scale-codec", version = "3.1.2", features = ["derive"] }
 parking_lot = "0.11.1"
